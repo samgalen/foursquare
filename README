@@ -1,0 +1,10 @@
+This is a project to finally compute the subgame perfect 
+equilibrium of foursquare. 
+
+There are a couple different components to this project:
+
+	1. foursquare - defines the foursquare game
+
+	2. gamegraph - algs to traverse gamestate digraph
+
+	3. prodcon - backend producer/consumer queue to enable parallelism	
