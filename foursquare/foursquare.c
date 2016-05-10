@@ -29,6 +29,8 @@ struct Game {
 	unsigned int red_blue : 3;
 	unsigned int red_red : 3;
 
+	char mover;
+
 };
 
 bool validMove(struct Game game1, struct Game game2, char *moved)
@@ -341,234 +343,271 @@ struct Game newGame()
 	(*game).blue_red = 4;
 	(*game).red_red = 4;
 
+	(*game).mover = 'r';
+
 	return *game;
 }
-short unsigned int *gameBoardToArray(struct Game game)
+
+short unsigned int _boardPiece(struct Game *game, int x, int y)
 {
-	short unsigned int *board = malloc(sizeof(short unsigned int)*16);
-	*(board) = game.sq00;
-	*(board+sizeof(short unsigned int)) = game.sq01;
-	*(board+sizeof(short unsigned int)*2) = game.sq02;
-	*(board+sizeof(short unsigned int)*3) = game.sq03;
-	*(board+sizeof(short unsigned int)*4) = game.sq10;
-	*(board+sizeof(short unsigned int)*5) = game.sq11;
-	*(board+sizeof(short unsigned int)*6) = game.sq12;
-	*(board+sizeof(short unsigned int)*7) = game.sq13;
-	*(board+sizeof(short unsigned int)*8) = game.sq20;
-	*(board+sizeof(short unsigned int)*9) = game.sq21;
-	*(board+sizeof(short unsigned int)*10) = game.sq22;
-	*(board+sizeof(short unsigned int)*11) = game.sq23;
-	*(board+sizeof(short unsigned int)*12) = game.sq30;
-	*(board+sizeof(short unsigned int)*13) = game.sq31;
-	*(board+sizeof(short unsigned int)*14) = game.sq32;
-	*(board+sizeof(short unsigned int)*15) = game.sq33;
-
-	return board;
+	/// return the value at x,y
+	
+	if (x == 0 && y == 0)
+		return (*game).sq00;
+	if (x == 0 && y == 1)
+		return (*game).sq01;
+	if (x == 0 && y == 2)
+		return (*game).sq02;
+	if (x == 0 && y == 3)
+		return (*game).sq03;
+	if (x == 1 && y == 0)
+		return (*game).sq10;
+	if (x == 1 && y == 1)
+		return (*game).sq11;
+	if (x == 1 && y == 2)
+		return (*game).sq12;
+	if (x == 1 && y == 3)
+		return (*game).sq13;
+	if (x == 2 && y == 0)
+		return (*game).sq20;
+	if (x == 2 && y == 1)
+		return (*game).sq21;
+	if (x == 2 && y == 2)
+		return (*game).sq22;
+	if (x == 2 && y == 3)
+		return (*game).sq23;
+	if (x == 3 && y == 0)
+		return (*game).sq30;
+	if (x == 3 && y == 1)
+		return (*game).sq31;
+	if (x == 3 && y == 2)
+		return (*game).sq32;
+	if (x == 3 && y == 3)
+		return (*game).sq33;
 }
-
 void printBoard(struct Game game)
 {
-	short unsigned int *board;
-	board = gameBoardToArray(game);
-	int i;
+
+
+	int i,x,y;
+	short unsigned int piece;
+
 	for (i = 0; i < 16; i++)
 	{
+		y = i % 4;
+		x = (i - y)/4;
+
+		piece = _boardPiece(&game,x,y);
+		
 		if (i % 4 == 0)
 		{
 			printf("\n");
 		}
-		if (*(board+i*2) == 0)
+		if (piece == 0)
 		{
 			printf("0");
 		}
-		else if (*(board+i*2) == 1)
+		else if (piece == 1)
 		{
 			printf("w");
 		}
-		else if (*(board+i*2) == 2)
+		else if (piece == 2)
 		{
 			printf("r");
 		}
-		else if (*(board+i*2) == 3)
+		else if (piece == 3)
 		{
 			printf("b");
 		}
 		else
 		{
-			printf("Error, invalid board entry! %d", *(board+i));
+			fprintf(stderr,"Error, invalid board entry! %d\n", piece);
+			exit(-1);
 		}
 	}
 	printf("\n");
 }
-void _setVal(unsigned int square,char piece)
+void _valueUpdate(struct Game *game, int x, int y, int val)
 {
-	if (piece == 'w' && (square) == 0)
+	/// This is necessary because we can't pass a pointer to bitfields
+
+
+	if (x == 0 && y == 0)
+		(*game).sq00 = val;
+	if (x == 0 && y == 1)
+		(*game).sq01 = val;
+	if (x == 0 && y == 2)
+		(*game).sq02 = val;
+	if (x == 0 && y == 3)
+		(*game).sq03 = val;
+	if (x == 1 && y == 0)
+		(*game).sq10 = val;
+	if (x == 1 && y == 1)
+		(*game).sq11 = val;
+	if (x == 1 && y == 2)
+		(*game).sq12 = val;
+	if (x == 1 && y == 3)
+		(*game).sq13 = val;
+	if (x == 2 && y == 0)
+		(*game).sq20 = val;
+	if (x == 2 && y == 1)
+		(*game).sq21 = val;
+	if (x == 2 && y == 2)
+		(*game).sq22 = val;
+	if (x == 2 && y == 3)
+		(*game).sq23 = val;
+	if (x == 3 && y == 0)
+		(*game).sq30 = val;
+	if (x == 3 && y == 1)
+		(*game).sq31 = val;
+	if (x == 3 && y == 2)
+		(*game).sq32 = val;
+	if (x == 3 && y == 3)
+		(*game).sq33 = val;
+}
+void _setVal(struct Game *game,int x, int y,char piece)
+{
+	if (x < 0 || x > 3 || y < 0 || y > 3)
 	{
-		(square)= 1;
+		fprintf(stderr,"Off board error: %i,%i\n",x,y);
+		exit(-1);
 	}
-	else if (piece == 'r' && (square) == 1)
+	if (piece == 'w' && _boardPiece(game,x,y) == 0)
 	{
-		(square)= 2;
+		_valueUpdate(game,x,y,1);		
 	}
-	else if (piece == 'b' && (square) == 1)
+	else if (piece == 'r' && _boardPiece(game,x,y) == 1)
 	{
-		(square)= 3;
+		_valueUpdate(game,x,y,2);
+	}
+	else if (piece == 'b' && _boardPiece(game,x,y) == 1)
+	{
+		_valueUpdate(game,x,y,3);
 	}
 	else
 	{
-		fprintf(stderr,"Cannot place piece %c on square of value %i",piece,(square));
+		fprintf(stderr,"Cannot place piece %c on square of value %i",piece,_boardPiece(game,x,y));
 		exit(-1);
 	}
 }
 
-void _place(struct Game *game, int x, int y, char piece)
+void move(struct Game *game, int x, int y, char piece)
 {
-
-	switch(x) {
-		case 0:
-			switch(y) {
-				case 0:
-					_setVal((*game).sq00,piece);
-				case 1:
-					_setVal((*game).sq01,piece);
-				case 2:
-					_setVal((*game).sq02,piece);
-				case 3:
-					_setVal((*game).sq03,piece);
-				default:
-					fprintf(stderr,"Invalid indices x: %i, y: %i", x,y);
-					exit(-1);
-			}
-		case 1:
-			switch(y) {
-				case 0:
-					_setVal((*game).sq10,piece);
-				case 1:
-					_setVal((*game).sq11,piece);
-				case 2:
-					_setVal((*game).sq12,piece);
-				case 3:
-					_setVal((*game).sq13,piece);
-				default:
-					fprintf(stderr,"Invalid indices x: %i, y: %i", x,y);
-					exit(-1);
-			}
-		case 2:
-			switch(y) {
-				case 0:
-					_setVal((*game).sq20,piece);
-				case 1:
-					_setVal((*game).sq21,piece);
-				case 2:
-					_setVal((*game).sq22,piece);
-				case 3:
-					_setVal((*game).sq23,piece);
-				default:
-					fprintf(stderr,"Invalid indices x: %i, y: %i", x,y);
-					exit(-1);
-			}
-		case 3:
-			switch(y) {
-				case 0:
-					_setVal((*game).sq30,piece);
-				case 1:
-					_setVal((*game).sq31,piece);
-				case 2:
-					_setVal((*game).sq32,piece);
-				case 3:
-					_setVal((*game).sq33,piece);
-				default:
-					fprintf(stderr,"Invalid indices x: %i, y: %i", x,y);
-					exit(-1);
-			}
-		default:
-				fprintf(stderr,"Invalid indices x: %i, y: %i", x,y);
-				exit(-1);
-	}
-}
-void move(struct Game *game, int x, int y, char mover, char piece)
-{
-	if (mover == 'r')
+	if ((*game).mover == 'r')
 	{
 		if (piece == 'r' && (*game).red_red > 0)
 		{
-			_place(game,x,y,piece);
+			_setVal(game,x,y,piece);
 			(*game).red_red--;
 		}
 		else if (piece == 'b' && (*game).red_blue > 0)
 		{
-			_place(game,x,y,piece);
+			_setVal(game,x,y,piece);
 			(*game).red_blue--;
 		}
 		else if (piece == 'w' && (*game).red_white > 0)
 		{
-			_place(game,x,y,piece);
+			_setVal(game,x,y,piece);
 			(*game).red_white--;
 		}
 		else
 		{
 			fprintf(stderr,"Invalid piece type: %c, r has r: %i b: %i w: %i", piece, (*game).red_red, (*game).red_blue, (*game).red_white);
+			exit(-1);
 		}
 	}
-	else if (mover == 'b')
+	else if ((*game).mover == 'b')
 	{
 		if (piece == 'r' && (*game).blue_red > 0)
 		{
-			_place(game,x,y,piece);
+			_setVal(game,x,y,piece);
 			(*game).blue_red--;
 		}
 		else if (piece == 'b' && (*game).blue_blue > 0)
 		{
-			_place(game,x,y,piece);
+			_setVal(game,x,y,piece);
 			(*game).blue_blue--;
 		}
 		else if (piece == 'w' && (*game).blue_white > 0)
 		{
-			_place(game,x,y,piece);
+			_setVal(game,x,y,piece);
 			(*game).blue_white--;
 		}
 		else
 		{
 			fprintf(stderr,"Invalid piece type: %c, b has r: %i b: %i w: %i", piece, (*game).blue_red, (*game).blue_blue, (*game).blue_white);
+			exit(-1);
 		}
 	}
+	if ((*game).mover == 'r')
+		(*game).mover = 'b';
+	else
+		((*game).mover = 'r');
 }
-struct Game *nextGames(struct Game game, char *mover)
-{
-	// return a pointer to memory chunk containing 
-	// the possible next game states of game
-	
-	int poss_gamestates = nnGame(game,mover);
-	struct Game *gamechunk = malloc(poss_gamestates*sizeof(struct Game));
 
+void copyGame(struct Game *old_game,struct Game *new_game)
+{
+	(*new_game).sq00 = (*old_game).sq00;
+	(*new_game).sq01 = (*old_game).sq01;
+	(*new_game).sq02 = (*old_game).sq02;
+	(*new_game).sq03 = (*old_game).sq03;
+	(*new_game).sq10 = (*old_game).sq10;
+	(*new_game).sq11 = (*old_game).sq11;
+	(*new_game).sq12 = (*old_game).sq12;
+	(*new_game).sq13 = (*old_game).sq13;
+	(*new_game).sq20 = (*old_game).sq20;
+	(*new_game).sq21 = (*old_game).sq21;
+	(*new_game).sq22 = (*old_game).sq22;
+	(*new_game).sq23 = (*old_game).sq23;
+	(*new_game).sq30 = (*old_game).sq30;
+	(*new_game).sq31 = (*old_game).sq31;
+	(*new_game).sq32 = (*old_game).sq32;
+	(*new_game).sq33 = (*old_game).sq33;
+
+	(*new_game).red_white = (*old_game).red_white;
+	(*new_game).red_red = (*old_game).red_red;
+	(*new_game).red_blue = (*old_game).red_blue;
+	
+	(*new_game).blue_white = (*old_game).blue_white;
+	(*new_game).blue_red = (*old_game).blue_red;
+	(*new_game).blue_blue = (*old_game).blue_blue;
+
+	(*new_game).mover = (*old_game).mover;
 }
-void movableSpaces(int *blank_board, int *white_board, short unsigned int *board)
+
+void movableSpaces(int *blank_board, int *white_board, struct Game game)
 {
 	// write the number of blank and white spaces in board to int ptrs
-	int i;
+	int i,x,y;
+	short unsigned int piece;
+
 	for (i =  0; i < 16; i++)
 	{
-		if (*(board+i*2) == 0)
+		y = i % 4;
+		x = (i - y)/4;
+
+		piece = _boardPiece(&game,x,y);
+
+		if (piece == 0)
 		{
 			(*blank_board)++;
 		}
-		else if (*(board+i*2)==  1)
+		else if (piece ==  1)
 		{
 			(*white_board)++;
 		}
 	}
 }
-int nnGame(struct Game game, char *mover)
+int nnGame(struct Game game)
 {
 	// return the number of possible next game states
 
 	int white_moves,red_moves,blue_moves;
 	int white_board = 0,blank_board = 0;
-	short unsigned int *board =  gameBoardToArray(game);
 	int i;
 
-	movableSpaces(&blank_board,&white_board,board);
-	if (*mover == 'r')
+	movableSpaces(&blank_board,&white_board,game);
+	if (game.mover == 'r')
 	{
 		if ((game.red_white > 0) && (blank_board > 0))
 			white_moves = blank_board;
@@ -585,7 +624,7 @@ int nnGame(struct Game game, char *mover)
 			blue_moves = 0;
 
 	}
-	else if (*mover == 'b')
+	else if (game.mover == 'b')
 	{
 		if ((game.blue_white > 0) && (blank_board > 0))
 			white_moves = blank_board;
@@ -603,53 +642,291 @@ int nnGame(struct Game game, char *mover)
 	}
 	else
 	{
-		fprintf(stderr,"Invalid mover char: %c", *mover);
+		fprintf(stderr,"Invalid mover char: %c", game.mover);
 		exit(-1);
 	}
 	return white_moves+blue_moves+red_moves;
 }
+void writeGame(struct Game *gptr)
+{
+	/// write a new game to a pointer
+
+	(*gptr).sq00 = 0;
+	(*gptr).sq01 = 0;
+	(*gptr).sq02 = 0;
+	(*gptr).sq03 = 0;
+	(*gptr).sq10 = 0;
+	(*gptr).sq11 = 0;
+	(*gptr).sq12 = 0;
+	(*gptr).sq13 = 0;
+	(*gptr).sq20 = 0;
+	(*gptr).sq21 = 0;
+	(*gptr).sq23 = 0;
+	(*gptr).sq30 = 0;
+	(*gptr).sq31 = 0;
+	(*gptr).sq32 = 0;
+	(*gptr).sq33 = 0;
+
+	(*gptr).blue_white = 8;
+	(*gptr).red_white = 8;
+	(*gptr).blue_blue = 4;
+	(*gptr).red_blue = 4;
+	(*gptr).blue_red = 4;
+	(*gptr).red_red = 4;
+
+	(*gptr).mover = 'r';
+}
+struct Game *nextGames(struct Game game)
+{
+	struct Game *next = (struct Game *)malloc(nnGame(game)*sizeof(struct Game));
+	int i,x,y,piece,write_ind = 0;
+
+	for (i = 0; i < 16; i++)
+	{
+		y = i % 4;
+		x = (i - y)/4;
+		piece = _boardPiece(&game,x,y);
+		
+		if (piece == 0)
+		{
+			if ((game.mover == 'r' && game.red_white > 0) || (game.mover == 'b' && game.blue_white > 0))
+			{
+				writeGame(next+(write_ind*sizeof(struct Game)));
+				copyGame(&game,next+(write_ind*sizeof(struct Game)));
+				move(next+(write_ind*sizeof(struct Game)),x,y,'w');
+				write_ind++;
+			}
+		}
+		else if (piece == 1)
+		{
+			if ((game.mover == 'r' && game.red_red >0) || (game.mover == 'b' && game.blue_red >0))
+			{
+				writeGame(next+(write_ind*sizeof(struct Game)));
+				copyGame(&game,next+(write_ind*sizeof(struct Game)));
+				move(next+(write_ind*sizeof(struct Game)),x,y,'r');
+				write_ind++;
+			}
+			if ((game.mover == 'r' && game.red_blue >0) || (game.mover == 'b' && game.blue_blue >0))
+			{
+				writeGame(next+(write_ind*sizeof(struct Game)));
+				copyGame(&game,next+(write_ind*sizeof(struct Game)));
+				move(next+(write_ind*sizeof(struct Game)),x,y,'b');
+				write_ind++;
+			}
+		}
+	}
+	
+	return next;	
+}
+
+char isWin4(struct Game game)
+{
+	int row4[10][4] = {
+		{0,4,8,12},
+		{1,5,9,13},
+		{2,6,10,14},
+		{3,7,11,15},
+		{0,1,2,3},
+		{4,5,6,7},
+		{8,9,10,11},
+		{12,13,14,15},
+		{0,5,10,15},
+		{12,9,6,3}
+	};
+
+	int line_index,i,x,y,j;
+	int piece;
+	int complete = false;
+
+	for (line_index = 0; line_index < 10; line_index++)
+	{
+		i = row4[line_index][0];
+		y = i % 4;
+		x = (i-y)/4;	
+		piece = _boardPiece(&game,x,y);
+
+		for (j = 1; j < 4; j++)
+		{
+			if (piece == 0 || piece == 1)
+				break;
+		
+			i = row4[line_index][j];
+			y = i % 4;
+			x = (i-y)/4;	
+			
+			if (_boardPiece(&game,x,y) != piece)
+				break;
+			if (j == 3)
+			       complete	= true;
+		}
+		if (complete)
+		{
+			if (piece == 2)
+				return 'r';
+			else if (piece == 3)
+				return 'b';
+			else
+				fprintf(stderr,"Invalid win condition! piece = %i",piece);
+		}
+
+	}
+	return 'f';	
+}
+char isWin3(struct Game game)
+{
+	int row3[24][3] = {
+		{0,4,8},
+		{4,8,12},
+		{1,5,9},
+		{5,9,13},
+		{2,6,10},
+		{6,10,11},
+		{3,7,11},
+		{7,11,15},
+		{0,1,2},
+		{1,2,3},
+		{4,5,6},
+		{5,6,7},
+		{8,9,10},
+		{9,10,11},
+		{12,13,14},
+		{13,14,15},
+		{4,9,14},
+		{0,5,10},
+		{5,10,15},
+		{1,6,11},
+		{8,5,2},
+		{12,9,6},
+		{9,6,3},
+		{13,10,7}
+	};
+
+	int line_index,red_count=0,blue_count=0;
+	int piece,i,j,x,y;
+	int complete = false;
+
+	for (line_index = 0; line_index < 24; line_index++)
+	{
+		complete = false;
+		i = row3[line_index][0];	
+		y = i % 4;
+		x = (i-y)/4;
+
+		piece = _boardPiece(&game,x,y);
+
+		for (j = 1; j < 3; j++)
+		{
+			if (piece == 0 || piece == 1)
+			      break;
+			i = row3[line_index][j];
+			y = i % 4;
+			x = (i-y)/4;
+
+			if (_boardPiece(&game,x,y) != piece)
+				break;
+			if (j == 2)
+				complete = true;
+		}
+
+		if (complete && piece == 2)
+			red_count++;
+		if (complete && piece == 3)
+			blue_count++;
+		if (complete && !(piece == 2 || piece == 3))
+			fprintf(stderr,"Invalid piece, but complete is true! %i\n",piece);
+	}
+
+	if (blue_count > red_count && blue_count > 2)
+	       return 'b';
+	if (red_count > blue_count && red_count > 2)
+		return 'r';
+	return 'f';	
+}
+int isWin(struct Game game)
+{
+	char win4 = isWin4(game);
+	if (win4 == 'r' || win4 == 'b')
+	{
+		return true;
+	}
+	else
+	{
+		char win3 = isWin3(game);
+		if (win3 == 'r' || win3 == 'b')
+			return true;
+	}
+	return false;
+}
 
 int main()
 {
-	struct Game game1 = newGame();
-	struct Game game2 = newGame();
-	printf("\ngame 1\n");	
-	printBoard(game1);
-	
-	
-	if (nextMove(game1,game2))
-	{
-		printf("\nyes");
-	}
-	else
-	{
-		printf("\nno");
-	}
 
-	_setVal(game2.sq00,'w');
-	printBoard(game2);
+	int i;
+	struct Game game = newGame();
 	
-	move(&game2, 0, 0, 'r','w');	
-	printf("\ngame 2\n");
-	printBoard(game2);
-	
-	if (nextMove(game1,game2))
-	{
-		printf("\nyes");
-	}
-	else
-	{
-		printf("\nno");
-	}
-	
-	printf("\nSize of a game: %i\n",sizeof(struct Game));
-	printf("\nSize of an int: %i\n",sizeof(double));
-	
-	char mover = 'r';
+	printf("Starting game: %i\n",isWin(game));
+	move(&game,0,0,'w');
+	move(&game,0,1,'w');	
+	move(&game,0,2,'w');	
+	move(&game,0,3,'w');
 
-	printf("\nNumber of possible moves for game1: %i\n", nnGame(game1,&mover));
-	mover = 'b';
-	printf("\nNumber of possible moves for game2: %i\n", nnGame(game2,&mover));
+	printf("White columns: %i\n",isWin(game));
+	
+	move(&game,0,0,'r');
+	move(&game,0,1,'r');
+	move(&game,0,2,'r');
+	
+	printf("3: %i\n", isWin(game));
 
-	return 0;
+	move(&game,0,3,'r');
+	printf("4: %i\n", isWin(game));
+
+	game = newGame();
+
+	printf("Starting game: %i\n",isWin(game));
+
+	move(&game,0,0,'w');
+	move(&game,0,1,'w');	
+	move(&game,0,2,'w');	
+	move(&game,0,3,'w');
+	move(&game,1,0,'w');
+	move(&game,1,1,'w');	
+	move(&game,1,2,'w');	
+	move(&game,1,3,'w');
+	move(&game,2,0,'w');
+	move(&game,2,1,'w');	
+	move(&game,2,2,'w');	
+	move(&game,2,3,'w');
+	move(&game,3,1,'w');	
+	move(&game,3,2,'w');	
+	move(&game,3,3,'w');
+	move(&game,3,0,'w');	
+	printf("isWin: %i\n",isWin(game));
+	
+	move(&game,2,0,'r');
+	printBoard(game);
+	move(&game,2,1,'r');
+	printBoard(game);
+	move(&game,2,2,'r');
+	printBoard(game);
+	move(&game,2,3,'b');
+	printBoard(game);
+	move(&game,3,0,'b');
+	printBoard(game);
+	move(&game,3,1,'r');	
+	printBoard(game);
+	move(&game,3,2,'r');	
+	printBoard(game);
+	move(&game,3,3,'r');
+	printBoard(game);
+	move(&game,0,0,'r');
+	printBoard(game);
+	move(&game,0,1,'r');
+	printBoard(game);
+	move(&game,0,2,'r');
+	printBoard(game);
+	move(&game,0,3,'r');
+	printBoard(game);
+		
+	printf("isWin: %i\n",isWin(game));
 }
