@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-struct Game {
+typedef struct Game {
 
 	unsigned int sq00 : 2;
 	unsigned int sq01 : 2;
@@ -31,9 +31,9 @@ struct Game {
 
 	char mover;
 
-};
+} Game;
 
-bool validMove(struct Game game1, struct Game game2, char *moved)
+bool validMove(Game game1, Game game2, char *moved)
 {
 	short unsigned int board1[16] = 
 			{
@@ -123,7 +123,7 @@ bool validMove(struct Game game1, struct Game game2, char *moved)
 		return false;
 	}
 }
-bool moveOrder(struct Game game1, struct Game game2, char *mover)
+bool moveOrder(Game game1, Game game2, char *mover)
 {
 	/* moveOrder - returns true if game2 has correct number
 	 * of pieces based on game1 and writes the mover to mover
@@ -174,7 +174,7 @@ bool moveOrder(struct Game game1, struct Game game2, char *mover)
 		return false;
 	}
 }
-bool pieceCount(struct Game game1, struct Game game2, char *mover, char *moved)
+bool pieceCount(Game game1, Game game2, char *mover, char *moved)
 {
 	/* At this point we have checked to see that the bulk
 	 * number of pieces checks out, now we must check 
@@ -279,7 +279,7 @@ bool pieceCount(struct Game game1, struct Game game2, char *mover, char *moved)
 		return false;
 	}
 }
-bool nextMove(struct Game game1, struct Game game2)
+bool nextMove(Game game1, Game game2)
 {
 	/* the following conditions must hold for game2
 	 * to be a valid next move for game1:
@@ -317,9 +317,9 @@ bool nextMove(struct Game game1, struct Game game2)
 	}
 	return false;
 }
-struct Game newGame()
+Game newGame()
 {
-	struct Game *game = malloc(sizeof(struct Game));
+	Game *game = malloc(sizeof(Game));
 	(*game).sq00 = 0;
 	(*game).sq01 = 0;
 	(*game).sq02 = 0;
@@ -348,7 +348,7 @@ struct Game newGame()
 	return *game;
 }
 
-short unsigned int _boardPiece(struct Game *game, int x, int y)
+short unsigned int _boardPiece(Game *game, int x, int y)
 {
 	/// return the value at x,y
 	
@@ -385,7 +385,7 @@ short unsigned int _boardPiece(struct Game *game, int x, int y)
 	if (x == 3 && y == 3)
 		return (*game).sq33;
 }
-void printBoard(struct Game game)
+void printBoard(Game game)
 {
 
 
@@ -427,7 +427,7 @@ void printBoard(struct Game game)
 	}
 	printf("\n");
 }
-void _valueUpdate(struct Game *game, int x, int y, int val)
+void _valueUpdate(Game *game, int x, int y, int val)
 {
 	/// This is necessary because we can't pass a pointer to bitfields
 
@@ -465,7 +465,7 @@ void _valueUpdate(struct Game *game, int x, int y, int val)
 	if (x == 3 && y == 3)
 		(*game).sq33 = val;
 }
-void _setVal(struct Game *game,int x, int y,char piece)
+void _setVal(Game *game,int x, int y,char piece)
 {
 	if (x < 0 || x > 3 || y < 0 || y > 3)
 	{
@@ -491,7 +491,7 @@ void _setVal(struct Game *game,int x, int y,char piece)
 	}
 }
 
-void move(struct Game *game, int x, int y, char piece)
+void move(Game *game, int x, int y, char piece)
 {
 	if ((*game).mover == 'r')
 	{
@@ -545,7 +545,7 @@ void move(struct Game *game, int x, int y, char piece)
 		((*game).mover = 'r');
 }
 
-void copyGame(struct Game *old_game,struct Game *new_game)
+void copyGame(Game *old_game,Game *new_game)
 {
 	(*new_game).sq00 = (*old_game).sq00;
 	(*new_game).sq01 = (*old_game).sq01;
@@ -575,7 +575,7 @@ void copyGame(struct Game *old_game,struct Game *new_game)
 	(*new_game).mover = (*old_game).mover;
 }
 
-void movableSpaces(int *blank_board, int *white_board, struct Game game)
+void movableSpaces(int *blank_board, int *white_board, Game game)
 {
 	// write the number of blank and white spaces in board to int ptrs
 	int i,x,y;
@@ -598,7 +598,7 @@ void movableSpaces(int *blank_board, int *white_board, struct Game game)
 		}
 	}
 }
-int nnGame(struct Game game)
+int nnGame(Game game)
 {
 	// return the number of possible next game states
 
@@ -647,7 +647,7 @@ int nnGame(struct Game game)
 	}
 	return white_moves+blue_moves+red_moves;
 }
-void writeGame(struct Game *gptr)
+void writeGame(Game *gptr)
 {
 	/// write a new game to a pointer
 
@@ -676,9 +676,9 @@ void writeGame(struct Game *gptr)
 
 	(*gptr).mover = 'r';
 }
-struct Game *nextGames(struct Game game)
+Game *nextGames(Game game)
 {
-	struct Game *next = (struct Game *)malloc(nnGame(game)*sizeof(struct Game));
+	Game *next = (Game *)malloc(nnGame(game)*sizeof(Game));
 	int i,x,y,piece,write_ind = 0;
 
 	for (i = 0; i < 16; i++)
@@ -691,9 +691,9 @@ struct Game *nextGames(struct Game game)
 		{
 			if ((game.mover == 'r' && game.red_white > 0) || (game.mover == 'b' && game.blue_white > 0))
 			{
-				writeGame(next+(write_ind*sizeof(struct Game)));
-				copyGame(&game,next+(write_ind*sizeof(struct Game)));
-				move(next+(write_ind*sizeof(struct Game)),x,y,'w');
+				writeGame(next+(write_ind*sizeof(Game)));
+				copyGame(&game,next+(write_ind*sizeof(Game)));
+				move(next+(write_ind*sizeof(Game)),x,y,'w');
 				write_ind++;
 			}
 		}
@@ -701,16 +701,16 @@ struct Game *nextGames(struct Game game)
 		{
 			if ((game.mover == 'r' && game.red_red >0) || (game.mover == 'b' && game.blue_red >0))
 			{
-				writeGame(next+(write_ind*sizeof(struct Game)));
-				copyGame(&game,next+(write_ind*sizeof(struct Game)));
-				move(next+(write_ind*sizeof(struct Game)),x,y,'r');
+				writeGame(next+(write_ind*sizeof(Game)));
+				copyGame(&game,next+(write_ind*sizeof(Game)));
+				move(next+(write_ind*sizeof(Game)),x,y,'r');
 				write_ind++;
 			}
 			if ((game.mover == 'r' && game.red_blue >0) || (game.mover == 'b' && game.blue_blue >0))
 			{
-				writeGame(next+(write_ind*sizeof(struct Game)));
-				copyGame(&game,next+(write_ind*sizeof(struct Game)));
-				move(next+(write_ind*sizeof(struct Game)),x,y,'b');
+				writeGame(next+(write_ind*sizeof(Game)));
+				copyGame(&game,next+(write_ind*sizeof(Game)));
+				move(next+(write_ind*sizeof(Game)),x,y,'b');
 				write_ind++;
 			}
 		}
@@ -719,7 +719,7 @@ struct Game *nextGames(struct Game game)
 	return next;	
 }
 
-char isWin4(struct Game game)
+char isWin4(Game game)
 {
 	int row4[10][4] = {
 		{0,4,8,12},
@@ -772,7 +772,7 @@ char isWin4(struct Game game)
 	}
 	return 'f';	
 }
-char isWin3(struct Game game)
+char isWin3(Game game)
 {
 	int row3[24][3] = {
 		{0,4,8},
@@ -842,7 +842,7 @@ char isWin3(struct Game game)
 		return 'r';
 	return 'f';	
 }
-int isWin(struct Game game)
+int isWin(Game game)
 {
 	char win4 = isWin4(game);
 	if (win4 == 'r' || win4 == 'b')
@@ -862,8 +862,7 @@ int main()
 {
 
 	int i;
-	struct Game game = newGame();
-	
+	Game game = newGame();
 	printf("Starting game: %i\n",isWin(game));
 	move(&game,0,0,'w');
 	move(&game,0,1,'w');	
